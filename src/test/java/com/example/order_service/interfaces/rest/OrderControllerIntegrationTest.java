@@ -5,7 +5,7 @@ import com.example.order_service.domain.model.OrderStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -20,24 +20,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
-@AutoConfigureWebMvc
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
 class OrderControllerIntegrationTest {
 
     @Autowired
-    private WebApplicationContext webApplicationContext;
-
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    private MockMvc getMockMvc() {
-        if (mockMvc == null) {
-            mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
-        }
-        return mockMvc;
-    }
 
     @Test
     void contextLoads() {
@@ -66,7 +58,7 @@ class OrderControllerIntegrationTest {
                         .build())
                 .build();
 
-        getMockMvc().perform(post("/api/orders")
+        mockMvc.perform(post("/api/orders")
                         .header("Idempotency-Key", "test-key-123")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -77,7 +69,7 @@ class OrderControllerIntegrationTest {
 
     @Test
     void testHealthEndpoint() throws Exception {
-        getMockMvc().perform(get("/api/orders/health"))
+        mockMvc.perform(get("/api/orders/health"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Order Service is running"));
     }

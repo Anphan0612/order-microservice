@@ -183,7 +183,7 @@ class UpdateOrderStatusUseCaseTest {
         request.setStatus("SHIPPED");
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(testOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
-        when(outboxEventRepository.save(any(OutboxEvent.class))).thenReturn(new OutboxEvent());
+        lenient().when(outboxEventRepository.save(any(OutboxEvent.class))).thenReturn(new OutboxEvent());
 
         // When
         OrderDetailResponse result = updateOrderStatusUseCase.execute(orderId, request);
@@ -202,7 +202,7 @@ class UpdateOrderStatusUseCaseTest {
         request.setStatus("DELIVERED");
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(testOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
-        when(outboxEventRepository.save(any(OutboxEvent.class))).thenReturn(new OutboxEvent());
+        lenient().when(outboxEventRepository.save(any(OutboxEvent.class))).thenReturn(new OutboxEvent());
 
         // When
         OrderDetailResponse result = updateOrderStatusUseCase.execute(orderId, request);
@@ -220,7 +220,7 @@ class UpdateOrderStatusUseCaseTest {
         request.setStatus("CANCELLED");
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(testOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
-        when(outboxEventRepository.save(any(OutboxEvent.class))).thenReturn(new OutboxEvent());
+        lenient().when(outboxEventRepository.save(any(OutboxEvent.class))).thenReturn(new OutboxEvent());
 
         // When
         OrderDetailResponse result = updateOrderStatusUseCase.execute(orderId, request);
@@ -239,7 +239,7 @@ class UpdateOrderStatusUseCaseTest {
         request.setStatus("REFUNDED");
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(testOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
-        when(outboxEventRepository.save(any(OutboxEvent.class))).thenReturn(new OutboxEvent());
+        lenient().when(outboxEventRepository.save(any(OutboxEvent.class))).thenReturn(new OutboxEvent());
 
         // When
         OrderDetailResponse result = updateOrderStatusUseCase.execute(orderId, request);

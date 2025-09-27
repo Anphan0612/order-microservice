@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/orders")
+@RequestMapping("/api/orders")
 @RequiredArgsConstructor
 @Slf4j
 public class OrderController {
@@ -20,12 +20,12 @@ public class OrderController {
     
     /**
      * Tạo đơn hàng mới
-     * POST /api/v1/orders
+     * POST /api/orders
      */
     @PostMapping
     public ResponseEntity<OrderResponse> createOrder(
             @Valid @RequestBody CreateOrderRequest request,
-            @RequestHeader("Idempotency-Key") String idempotencyKey) {
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
         
         log.info("Creating order for user: {}", request.getUserId());
         OrderResponse response = createOrderUseCase.execute(request, idempotencyKey);
@@ -34,7 +34,7 @@ public class OrderController {
     
     /**
      * Health check endpoint
-     * GET /api/v1/orders/health        
+     * GET /api/orders/health        
      */
     @GetMapping("/health")
     public ResponseEntity<String> health() {

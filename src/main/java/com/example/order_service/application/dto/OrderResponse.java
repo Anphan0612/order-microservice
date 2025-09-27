@@ -1,6 +1,5 @@
 package com.example.order_service.application.dto;
 
-import com.example.order_service.domain.model.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +18,7 @@ public class OrderResponse {
     private Long id;
     private String orderCode;
     private Long userId;
-    private OrderStatus status;
+    private String status;
     private String currency;
     private BigDecimal subtotal;
     private BigDecimal discount;
@@ -27,21 +26,8 @@ public class OrderResponse {
     private BigDecimal grandTotal;
     private String note;
     private DeliveryAddressResponse deliveryAddress;
-    private LocalDateTime createdAt;
     private List<OrderItemResponse> orderItems;
-    
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class OrderItemResponse {
-        private Long id;
-        private String productId;
-        private String productName;
-        private BigDecimal unitPrice;
-        private Integer quantity;
-        private BigDecimal lineTotal;
-    }
+    private LocalDateTime createdAt;
     
     @Data
     @Builder
@@ -55,5 +41,18 @@ public class OrderResponse {
         private String district;
         private String city;
         private String fullAddress;
+    }
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OrderItemResponse {
+        private Long id;
+        private String productId;
+        private String productName;
+        private BigDecimal unitPrice;
+        private Integer quantity;
+        private BigDecimal lineTotal;
     }
 }

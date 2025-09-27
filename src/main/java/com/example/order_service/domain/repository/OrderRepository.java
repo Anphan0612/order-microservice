@@ -36,6 +36,9 @@ public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecific
                                                @Param("startDate") LocalDateTime startDate,
                                                @Param("endDate") LocalDateTime endDate);
     
+    @Query("SELECT o FROM Order o WHERE o.userId = :userId ORDER BY o.createdAt DESC")
+    List<Order> findByUserIdOrderByCreatedAtDesc(@Param("userId") Long userId);
+    
     boolean existsByOrderCode(String orderCode);
     
     @Query("SELECT COUNT(o) FROM Order o WHERE o.userId = :userId AND o.status = :status")

@@ -9,13 +9,10 @@ import com.example.order_service.domain.exception.OrderValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -121,29 +118,4 @@ public class OrderManagementController {
         return ResponseEntity.ok(response);
     }
     
-    @ExceptionHandler(OrderValidationException.class)
-    public ResponseEntity<Map<String, Object>> handleOrderValidationException(OrderValidationException e) {
-        log.warn("Order validation error: {}", e.getMessage());
-        
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("timestamp", LocalDateTime.now());
-        errorResponse.put("status", HttpStatus.BAD_REQUEST.value());
-        errorResponse.put("error", "Order Validation Error");
-        errorResponse.put("message", e.getMessage());
-        
-        return ResponseEntity.badRequest().body(errorResponse);
-    }
-    
-    @ExceptionHandler(OrderNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleOrderNotFoundException(OrderNotFoundException e) {
-        log.warn("Order not found: {}", e.getMessage());
-        
-        Map<String, Object> errorResponse = new HashMap<>();
-        errorResponse.put("timestamp", LocalDateTime.now());
-        errorResponse.put("status", HttpStatus.NOT_FOUND.value());
-        errorResponse.put("error", "Order Not Found");
-        errorResponse.put("message", e.getMessage());
-        
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-    }
 }

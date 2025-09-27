@@ -30,21 +30,24 @@ public class CreateOrderUseCase {
     
     @Transactional
     public OrderResponse execute(CreateOrderRequest request, String idempotencyKey) {
-        // Validate idempotency key
-        if (idempotencyKey == null || idempotencyKey.trim().isEmpty()) {
-            throw new OrderValidationException("Idempotency key is required");
-        }
+        log.info("Creating order for user: {}", request.getUserId());
         
-        // Check if request already processed
-        if (idempotencyKeyRepository.existsByUserIdAndIdemKey(request.getUserId(), idempotencyKey)) {
-            IdempotencyKey existingKey = idempotencyKeyRepository
-                    .findByUserIdAndIdemKey(request.getUserId(), idempotencyKey)
-                    .orElseThrow(() -> new OrderValidationException("Idempotency key not found"));
-            
-            Order existingOrder = orderRepository.findById(existingKey.getOrderId())
-                    .orElseThrow(() -> new OrderValidationException("Order not found"));
-            
-            return mapToResponse(existingOrder);
+        // Validate request
+        validateRequest(request);
+        
+        // Handle idempotency if key is provided
+        if (idempotencyKey != null && !idempotencyKey.trim().isEmpty()) {
+            // Check if request already processed
+            if (idempotencyKeyRepository.existsByUserIdAndIdemKey(request.getUserId(), idempotencyKey)) {
+                IdempotencyKey existingKey = idempotencyKeyRepository
+                        .findByUserIdAndIdemKey(request.getUserId(), idempotencyKey)
+                        .orElseThrow(() -> new OrderValidationException("Idempotency key not found"));
+                
+                Order existingOrder = orderRepository.findById(existingKey.getOrderId())
+                        .orElseThrow(() -> new OrderValidationException("Order not found"));
+                
+                return mapToResponse(existingOrder);
+            }
         }
         
         // Validate external services
@@ -55,16 +58,18 @@ public class CreateOrderUseCase {
         Order order = createOrder(request);
         order = orderRepository.save(order);
         
-        // Save idempotency key
-        String requestHash = calculateRequestHash(request);
-        IdempotencyKey idemKey = IdempotencyKey.builder()
-                .userId(request.getUserId())
-                .idemKey(idempotencyKey)
-                .requestHash(requestHash)
-                .orderId(order.getId())
-                .createdAt(LocalDateTime.now())
-                .build();
-        idempotencyKeyRepository.save(idemKey);
+        // Save idempotency key if provided
+        if (idempotencyKey != null && !idempotencyKey.trim().isEmpty()) {
+            String requestHash = calculateRequestHash(request);
+            IdempotencyKey idemKey = IdempotencyKey.builder()
+                    .userId(request.getUserId())
+                    .idemKey(idempotencyKey)
+                    .requestHash(requestHash)
+                    .orderId(order.getId())
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            idempotencyKeyRepository.save(idemKey);
+        }
         
         // Create outbox event
         createOutboxEvent(order, "OrderCreated");
@@ -92,7 +97,7 @@ public class CreateOrderUseCase {
             if (item.getProductName() == null || item.getProductName().trim().isEmpty()) {
                 throw new OrderValidationException("Product name cannot be empty");
             }
-            if (item.getUnitPrice() == null || item.getUnitPrice().compareTo(BigDecimal.ZERO) <= 0) {
+            if (item.getUnitPrice() == null || item.getUnitPrice().compareTo(java.math.BigDecimal.ZERO) <= 0) {
                 throw new OrderValidationException("Unit price must be positive");
             }
             if (item.getQuantity() == null || item.getQuantity() <= 0) {
@@ -100,6 +105,22 @@ public class CreateOrderUseCase {
             }
         }
         log.debug("Product validation passed for {} items", orderItems.size());
+    }
+    
+    private void validateRequest(CreateOrderRequest request) {
+        if (request.getUserId() == null || request.getUserId() <= 0) {
+            throw new OrderValidationException("Invalid user ID: " + request.getUserId());
+        }
+        
+        if (request.getOrderItems() == null || request.getOrderItems().isEmpty()) {
+            throw new OrderValidationException("Order items cannot be empty");
+        }
+        
+        if (request.getDeliveryAddress() == null) {
+            throw new OrderValidationException("Delivery address is required");
+        }
+        
+        log.debug("Request validation passed for user: {}", request.getUserId());
     }
     
     private Order createOrder(CreateOrderRequest request) {
@@ -110,7 +131,6 @@ public class CreateOrderUseCase {
                 .userId(request.getUserId())
                 .status(OrderStatus.PENDING)
                 .currency("VND")
-<<<<<<< HEAD
                 .discount(request.getDiscount() != null ? request.getDiscount() : BigDecimal.ZERO)
                 .shippingFee(request.getShippingFee() != null ? request.getShippingFee() : BigDecimal.ZERO)
                 .note(request.getNote())
@@ -147,7 +167,7 @@ public class CreateOrderUseCase {
     }
     
     private String generateOrderCode() {
-        return "ORD" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        return "ORD-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
     
     private String calculateRequestHash(CreateOrderRequest request) {
@@ -193,8 +213,7 @@ public class CreateOrderUseCase {
                 .id(order.getId())
                 .orderCode(order.getOrderCode())
                 .userId(order.getUserId())
-<<<<<<< HEAD
-                .status(order.getStatus())
+                .status(order.getStatus().name())
                 .currency(order.getCurrency())
                 .subtotal(order.getSubtotal())
                 .discount(order.getDiscount())
@@ -202,33 +221,33 @@ public class CreateOrderUseCase {
                 .grandTotal(order.getGrandTotal())
                 .note(order.getNote())
                 .deliveryAddress(mapToDeliveryAddressResponse(order.getDeliveryAddress()))
-                .createdAt(order.getCreatedAt())
                 .orderItems(order.getOrderItems().stream()
                         .map(this::mapToOrderItemResponse)
                         .collect(Collectors.toList()))
+                .createdAt(order.getCreatedAt())
                 .build();
     }
     
-    private OrderResponse.DeliveryAddressResponse mapToDeliveryAddressResponse(DeliveryAddress address) {
+    private OrderResponse.DeliveryAddressResponse mapToDeliveryAddressResponse(DeliveryAddress deliveryAddress) {
         return OrderResponse.DeliveryAddressResponse.builder()
-                .receiverName(address.getReceiverName())
-                .receiverPhone(address.getReceiverPhone())
-                .addressLine1(address.getAddressLine1())
-                .ward(address.getWard())
-                .district(address.getDistrict())
-                .city(address.getCity())
-                .fullAddress(address.getFullAddress())
+                .receiverName(deliveryAddress.getReceiverName())
+                .receiverPhone(deliveryAddress.getReceiverPhone())
+                .addressLine1(deliveryAddress.getAddressLine1())
+                .ward(deliveryAddress.getWard())
+                .district(deliveryAddress.getDistrict())
+                .city(deliveryAddress.getCity())
+                .fullAddress(deliveryAddress.getFullAddress())
                 .build();
     }
     
-    private OrderResponse.OrderItemResponse mapToOrderItemResponse(OrderItem item) {
+    private OrderResponse.OrderItemResponse mapToOrderItemResponse(OrderItem orderItem) {
         return OrderResponse.OrderItemResponse.builder()
-                .id(item.getId())
-                .productId(item.getProductId())
-                .productName(item.getProductName())
-                .unitPrice(item.getUnitPrice())
-                .quantity(item.getQuantity())
-                .lineTotal(item.getLineTotal())
+                .id(orderItem.getId())
+                .productId(orderItem.getProductId())
+                .productName(orderItem.getProductName())
+                .unitPrice(orderItem.getUnitPrice())
+                .quantity(orderItem.getQuantity())
+                .lineTotal(orderItem.getLineTotal())
                 .build();
     }
 }
