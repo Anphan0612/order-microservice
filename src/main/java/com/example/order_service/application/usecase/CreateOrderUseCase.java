@@ -92,6 +92,12 @@ public class CreateOrderUseCase {
             if (item.getProductName() == null || item.getProductName().trim().isEmpty()) {
                 throw new OrderValidationException("Product name cannot be empty");
             }
+            if (item.getUnitPrice() == null || item.getUnitPrice().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new OrderValidationException("Unit price must be positive");
+            }
+            if (item.getQuantity() == null || item.getQuantity() <= 0) {
+                throw new OrderValidationException("Quantity must be positive");
+            }
         }
         log.debug("Product validation passed for {} items", orderItems.size());
     }
@@ -104,6 +110,7 @@ public class CreateOrderUseCase {
                 .userId(request.getUserId())
                 .status(OrderStatus.PENDING)
                 .currency("VND")
+<<<<<<< HEAD
                 .discount(request.getDiscount() != null ? request.getDiscount() : BigDecimal.ZERO)
                 .shippingFee(request.getShippingFee() != null ? request.getShippingFee() : BigDecimal.ZERO)
                 .note(request.getNote())
@@ -186,6 +193,7 @@ public class CreateOrderUseCase {
                 .id(order.getId())
                 .orderCode(order.getOrderCode())
                 .userId(order.getUserId())
+<<<<<<< HEAD
                 .status(order.getStatus())
                 .currency(order.getCurrency())
                 .subtotal(order.getSubtotal())
