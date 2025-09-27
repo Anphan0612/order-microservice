@@ -1,6 +1,6 @@
-# Order Service - Order Create Feature
+# Order Service - Order Management System
 
-Order Service là một microservice được phát triển theo kiến trúc Domain-Driven Design (DDD), tập trung vào tính năng **tạo đơn hàng** sử dụng Spring Boot và MySQL database.
+Order Service là một microservice được phát triển theo kiến trúc Domain-Driven Design (DDD), cung cấp đầy đủ các tính năng **quản lý đơn hàng** bao gồm tạo, xem, tìm kiếm và cập nhật trạng thái đơn hàng sử dụng Spring Boot và MySQL database.
 
 ## Kiến trúc
 
@@ -23,11 +23,21 @@ src/main/java/com/example/order_service/
 
 ## Tính năng chính
 
+### Quản lý đơn hàng
 - **Tạo đơn hàng**: Tạo đơn hàng mới với validation và idempotency
+- **Xem danh sách đơn hàng**: Lấy danh sách đơn hàng với phân trang và bộ lọc
+- **Xem chi tiết đơn hàng**: Lấy thông tin chi tiết của một đơn hàng
+- **Tìm kiếm đơn hàng**: Tìm kiếm đơn hàng theo các tiêu chí khác nhau
+- **Cập nhật trạng thái**: Cập nhật trạng thái đơn hàng (confirm, ship, deliver, cancel)
+
+### Tính năng hỗ trợ
 - **Validation**: Kiểm tra dữ liệu đầu vào cơ bản
 - **Idempotency**: Đảm bảo tính idempotent cho các request tạo đơn hàng
 - **Event-driven**: Sử dụng outbox pattern để gửi events
 - **Database persistence**: Lưu trữ đơn hàng vào MySQL
+- **Pagination**: Hỗ trợ phân trang cho tất cả API danh sách
+- **Filtering**: Hỗ trợ lọc theo nhiều tiêu chí
+- **Sorting**: Hỗ trợ sắp xếp theo các trường khác nhau
 
 ## Công nghệ sử dụng
 
@@ -52,7 +62,7 @@ src/main/java/com/example/order_service/
 
 ## API Endpoints
 
-### Tạo đơn hàng
+### 1. Tạo đơn hàng
 ```http
 POST /api/orders
 Content-Type: application/json
@@ -82,10 +92,42 @@ Idempotency-Key: <unique-key>
 }
 ```
 
-### Health Check
+### 2. Xem danh sách đơn hàng
+```http
+GET /api/orders?userId=1&status=PENDING&page=0&size=20&sortBy=createdAt&sortDirection=DESC
+```
+
+### 3. Xem chi tiết đơn hàng
+```http
+GET /api/orders/{orderId}
+```
+
+### 4. Cập nhật trạng thái đơn hàng
+```http
+PUT /api/orders/{orderId}/status
+Content-Type: application/json
+
+{
+  "status": "CONFIRMED",
+  "note": "Order confirmed by admin"
+}
+```
+
+### 5. Tìm kiếm đơn hàng
+```http
+GET /api/orders/search?keyword=ORD123&status=PENDING&page=0&size=20
+```
+
+### 6. Health Check
 ```http
 GET /api/orders/health
 ```
+
+## API Documentation
+
+Chi tiết đầy đủ về các API endpoints có thể xem tại:
+- [API_TEST.md](API_TEST.md) - Hướng dẫn test API tạo đơn hàng
+- [ORDER_MANAGEMENT_API.md](ORDER_MANAGEMENT_API.md) - Tài liệu API quản lý đơn hàng
 
 ## Chạy ứng dụng
 
