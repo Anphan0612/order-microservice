@@ -23,18 +23,18 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class CreateOrderUseCase {
-    
+
     private final OrderRepository orderRepository;
     private final IdempotencyKeyRepository idempotencyKeyRepository;
     private final OutboxEventRepository outboxEventRepository;
-    
+
     @Transactional
     public OrderResponse execute(CreateOrderRequest request, String idempotencyKey) {
         log.info("Creating order for user: {}", request.getUserId());
-        
+
         // Validate request
         validateRequest(request);
-        
+
         // Handle idempotency if key is provided
         if (idempotencyKey != null && !idempotencyKey.trim().isEmpty()) {
             // Check if request already processed
@@ -42,22 +42,22 @@ public class CreateOrderUseCase {
                 IdempotencyKey existingKey = idempotencyKeyRepository
                         .findByUserIdAndIdemKey(request.getUserId(), idempotencyKey)
                         .orElseThrow(() -> new OrderValidationException("Idempotency key not found"));
-                
+
                 Order existingOrder = orderRepository.findById(existingKey.getOrderId())
                         .orElseThrow(() -> new OrderValidationException("Order not found"));
-                
+
                 return mapToResponse(existingOrder);
             }
         }
-        
+
         // Validate external services
         validateUserExists(request.getUserId());
         validateProducts(request.getOrderItems());
-        
+
         // Create order
         Order order = createOrder(request);
         order = orderRepository.save(order);
-        
+
         // Save idempotency key if provided
         if (idempotencyKey != null && !idempotencyKey.trim().isEmpty()) {
             String requestHash = calculateRequestHash(request);
@@ -70,14 +70,14 @@ public class CreateOrderUseCase {
                     .build();
             idempotencyKeyRepository.save(idemKey);
         }
-        
+
         // Create outbox event
         createOutboxEvent(order, "OrderCreated");
-        
+
         log.info("Order created successfully: {}", order.getOrderCode());
         return mapToResponse(order);
     }
-    
+
     private void validateUserExists(Long userId) {
         // TODO: Implement user validation when user service is available
         // For now, just validate that userId is positive
@@ -86,7 +86,7 @@ public class CreateOrderUseCase {
         }
         log.debug("User validation passed for user: {}", userId);
     }
-    
+
     private void validateProducts(java.util.List<CreateOrderRequest.OrderItemRequest> orderItems) {
         // TODO: Implement product validation when product service is available
         // For now, just validate basic product data
@@ -106,26 +106,26 @@ public class CreateOrderUseCase {
         }
         log.debug("Product validation passed for {} items", orderItems.size());
     }
-    
+
     private void validateRequest(CreateOrderRequest request) {
         if (request.getUserId() == null || request.getUserId() <= 0) {
             throw new OrderValidationException("Invalid user ID: " + request.getUserId());
         }
-        
+
         if (request.getOrderItems() == null || request.getOrderItems().isEmpty()) {
             throw new OrderValidationException("Order items cannot be empty");
         }
-        
+
         if (request.getDeliveryAddress() == null) {
             throw new OrderValidationException("Delivery address is required");
         }
-        
+
         log.debug("Request validation passed for user: {}", request.getUserId());
     }
-    
+
     private Order createOrder(CreateOrderRequest request) {
         String orderCode = generateOrderCode();
-        
+
         Order order = Order.builder()
                 .orderCode(orderCode)
                 .userId(request.getUserId())
@@ -137,7 +137,7 @@ public class CreateOrderUseCase {
                 .deliveryAddress(mapToDeliveryAddress(request.getDeliveryAddress()))
                 .createdAt(LocalDateTime.now())
                 .build();
-        
+
         // Add order items
         for (CreateOrderRequest.OrderItemRequest itemRequest : request.getOrderItems()) {
             OrderItem orderItem = OrderItem.builder()
@@ -148,13 +148,13 @@ public class CreateOrderUseCase {
                     .build();
             order.addOrderItem(orderItem);
         }
-        
+
         // Calculate totals
         order.calculateTotals();
-        
+
         return order;
     }
-    
+
     private DeliveryAddress mapToDeliveryAddress(CreateOrderRequest.DeliveryAddressRequest request) {
         return DeliveryAddress.builder()
                 .receiverName(request.getReceiverName())
@@ -165,15 +165,15 @@ public class CreateOrderUseCase {
                 .city(request.getCity())
                 .build();
     }
-    
+
     private String generateOrderCode() {
         return "ORD-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
-    
+
     private String calculateRequestHash(CreateOrderRequest request) {
         try {
-            String data = request.getUserId() + request.getOrderItems().toString() + 
-                         request.getDeliveryAddress().toString();
+            String data = request.getUserId() + request.getOrderItems().toString() +
+                    request.getDeliveryAddress().toString();
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] hash = md.digest(data.getBytes());
             StringBuilder hexString = new StringBuilder();
@@ -189,7 +189,7 @@ public class CreateOrderUseCase {
             throw new RuntimeException("Error calculating request hash", e);
         }
     }
-    
+
     private void createOutboxEvent(Order order, String eventType) {
         OutboxEvent event = OutboxEvent.builder()
                 .aggregateType("Order")
@@ -201,13 +201,13 @@ public class CreateOrderUseCase {
                 .build();
         outboxEventRepository.save(event);
     }
-    
+
     private String createEventPayload(Order order) {
         // Simple JSON payload - in real implementation, use proper JSON library
         return String.format("{\"orderId\":%d,\"orderCode\":\"%s\",\"userId\":%d,\"status\":\"%s\"}",
                 order.getId(), order.getOrderCode(), order.getUserId(), order.getStatus());
     }
-    
+
     private OrderResponse mapToResponse(Order order) {
         return OrderResponse.builder()
                 .id(order.getId())
@@ -227,7 +227,7 @@ public class CreateOrderUseCase {
                 .createdAt(order.getCreatedAt())
                 .build();
     }
-    
+
     private OrderResponse.DeliveryAddressResponse mapToDeliveryAddressResponse(DeliveryAddress deliveryAddress) {
         return OrderResponse.DeliveryAddressResponse.builder()
                 .receiverName(deliveryAddress.getReceiverName())
@@ -239,7 +239,7 @@ public class CreateOrderUseCase {
                 .fullAddress(deliveryAddress.getFullAddress())
                 .build();
     }
-    
+
     private OrderResponse.OrderItemResponse mapToOrderItemResponse(OrderItem orderItem) {
         return OrderResponse.OrderItemResponse.builder()
                 .id(orderItem.getId())

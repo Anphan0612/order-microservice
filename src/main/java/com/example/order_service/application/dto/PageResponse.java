@@ -12,7 +12,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PageResponse<T> {
-    
+
     private List<T> content;
     private int page;
     private int size;
@@ -22,11 +22,11 @@ public class PageResponse<T> {
     private boolean last;
     private boolean hasNext;
     private boolean hasPrevious;
-    
+
     public boolean hasNext() {
         return hasNext;
     }
-    
+
     public boolean hasPrevious() {
         return hasPrevious;
     }

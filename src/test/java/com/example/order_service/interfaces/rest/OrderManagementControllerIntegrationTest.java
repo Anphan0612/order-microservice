@@ -1,10 +1,6 @@
 package com.example.order_service.interfaces.rest;
 
-import com.example.order_service.application.dto.CreateOrderRequest;
-import com.example.order_service.application.dto.OrderListResponse;
-import com.example.order_service.application.dto.OrderDetailResponse;
-import com.example.order_service.application.dto.PageResponse;
-import com.example.order_service.application.dto.UpdateOrderStatusRequest;
+import com.example.order_service.application.dto.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +18,8 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -78,9 +75,9 @@ class OrderManagementControllerIntegrationTest {
                 .andReturn();
 
         String responseContent = result.getResponse().getContentAsString();
-        com.example.order_service.application.dto.OrderResponse orderResponse = 
+        com.example.order_service.application.dto.OrderResponse orderResponse =
                 objectMapper.readValue(responseContent, com.example.order_service.application.dto.OrderResponse.class);
-        
+
         return orderResponse.getId();
     }
 
@@ -100,7 +97,7 @@ class OrderManagementControllerIntegrationTest {
         // Then
         String responseContent = result.getResponse().getContentAsString();
         PageResponse<OrderListResponse> pageResponse = objectMapper.readValue(
-                responseContent, 
+                responseContent,
                 objectMapper.getTypeFactory().constructParametricType(PageResponse.class, OrderListResponse.class)
         );
 
@@ -124,12 +121,12 @@ class OrderManagementControllerIntegrationTest {
         // Then
         String responseContent = result.getResponse().getContentAsString();
         PageResponse<OrderListResponse> pageResponse = objectMapper.readValue(
-                responseContent, 
+                responseContent,
                 objectMapper.getTypeFactory().constructParametricType(PageResponse.class, OrderListResponse.class)
         );
 
         assertNotNull(pageResponse);
-        pageResponse.getContent().forEach(order -> 
+        pageResponse.getContent().forEach(order ->
                 assertEquals("PENDING", order.getStatus())
         );
     }
@@ -240,12 +237,12 @@ class OrderManagementControllerIntegrationTest {
         // Then
         String responseContent = result.getResponse().getContentAsString();
         PageResponse<OrderListResponse> pageResponse = objectMapper.readValue(
-                responseContent, 
+                responseContent,
                 objectMapper.getTypeFactory().constructParametricType(PageResponse.class, OrderListResponse.class)
         );
 
         assertNotNull(pageResponse);
-        pageResponse.getContent().forEach(order -> 
+        pageResponse.getContent().forEach(order ->
                 assertTrue(order.getOrderCode().contains("ORD"))
         );
     }
@@ -263,7 +260,7 @@ class OrderManagementControllerIntegrationTest {
         // Then
         String responseContent = result.getResponse().getContentAsString();
         PageResponse<OrderListResponse> pageResponse = objectMapper.readValue(
-                responseContent, 
+                responseContent,
                 objectMapper.getTypeFactory().constructParametricType(PageResponse.class, OrderListResponse.class)
         );
 

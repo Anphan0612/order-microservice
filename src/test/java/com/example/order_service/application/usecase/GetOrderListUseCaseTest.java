@@ -92,7 +92,7 @@ class GetOrderListUseCaseTest {
         // Given
         List<Order> orders = Arrays.asList(testOrder);
         Page<Order> orderPage = new PageImpl<>(orders, PageRequest.of(0, 20), 1);
-        
+
         when(orderRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(orderPage);
 
@@ -131,7 +131,7 @@ class GetOrderListUseCaseTest {
     void execute_ShouldReturnEmptyList_WhenNoOrdersFound() {
         // Given
         Page<Order> emptyPage = new PageImpl<>(Arrays.asList(), PageRequest.of(0, 20), 0);
-        
+
         when(orderRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(emptyPage);
 
@@ -155,7 +155,7 @@ class GetOrderListUseCaseTest {
         request.setUserId(1L);
         List<Order> orders = Arrays.asList(testOrder);
         Page<Order> orderPage = new PageImpl<>(orders, PageRequest.of(0, 20), 1);
-        
+
         when(orderRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(orderPage);
 
@@ -174,7 +174,7 @@ class GetOrderListUseCaseTest {
         request.setStatus("PENDING");
         List<Order> orders = Arrays.asList(testOrder);
         Page<Order> orderPage = new PageImpl<>(orders, PageRequest.of(0, 20), 1);
-        
+
         when(orderRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(orderPage);
 
@@ -193,7 +193,7 @@ class GetOrderListUseCaseTest {
         request.setOrderCode("ORD123");
         List<Order> orders = Arrays.asList(testOrder);
         Page<Order> orderPage = new PageImpl<>(orders, PageRequest.of(0, 20), 1);
-        
+
         when(orderRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(orderPage);
 

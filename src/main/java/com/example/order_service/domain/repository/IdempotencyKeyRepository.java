@@ -8,8 +8,8 @@ import java.util.Optional;
 
 @Repository
 public interface IdempotencyKeyRepository extends JpaRepository<IdempotencyKey, Long> {
-    
+
     Optional<IdempotencyKey> findByUserIdAndIdemKey(Long userId, String idemKey);
-    
+
     boolean existsByUserIdAndIdemKey(Long userId, String idemKey);
 }

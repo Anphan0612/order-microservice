@@ -1,7 +1,7 @@
 package com.example.order_service.application.usecase;
 
-import com.example.order_service.application.dto.OrderDetailResponse;
 import com.example.order_service.application.dto.DeliveryAddressResponse;
+import com.example.order_service.application.dto.OrderDetailResponse;
 import com.example.order_service.application.dto.OrderItemResponse;
 import com.example.order_service.domain.exception.OrderNotFoundException;
 import com.example.order_service.domain.model.Order;
@@ -17,19 +17,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class GetOrderDetailUseCase {
-    
+
     private final OrderRepository orderRepository;
-    
+
     @Transactional(readOnly = true)
     public OrderDetailResponse execute(Long orderId) {
         log.info("Getting order detail for orderId: {}", orderId);
-        
+
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + orderId));
-        
+
         return mapToOrderDetailResponse(order);
     }
-    
+
     private OrderDetailResponse mapToOrderDetailResponse(Order order) {
         return OrderDetailResponse.builder()
                 .id(order.getId())
@@ -49,7 +49,7 @@ public class GetOrderDetailUseCase {
                         .collect(Collectors.toList()))
                 .build();
     }
-    
+
     private DeliveryAddressResponse mapToDeliveryAddressResponse(
             com.example.order_service.domain.model.DeliveryAddress deliveryAddress) {
         return DeliveryAddressResponse.builder()
@@ -62,7 +62,7 @@ public class GetOrderDetailUseCase {
                 .fullAddress(deliveryAddress.getFullAddress())
                 .build();
     }
-    
+
     private OrderItemResponse mapToOrderItemResponse(
             com.example.order_service.domain.model.OrderItem orderItem) {
         return OrderItemResponse.builder()

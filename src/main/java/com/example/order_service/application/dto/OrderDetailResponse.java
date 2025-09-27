@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderDetailResponse {
-    
+
     private Long id;
     private String orderCode;
     private Long userId;

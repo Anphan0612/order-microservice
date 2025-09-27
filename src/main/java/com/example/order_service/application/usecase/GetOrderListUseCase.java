@@ -23,27 +23,27 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class GetOrderListUseCase {
-    
+
     private final OrderRepository orderRepository;
-    
+
     @Transactional(readOnly = true)
     public PageResponse<OrderListResponse> execute(OrderListRequest request) {
         log.info("Getting order list with request: {}", request);
-        
+
         // Build specification for filtering
         Specification<Order> spec = buildSpecification(request);
-        
+
         // Build pageable for pagination and sorting
         Pageable pageable = buildPageable(request);
-        
+
         // Query orders
         Page<Order> orderPage = orderRepository.findAll(spec, pageable);
-        
+
         // Convert to response
         List<OrderListResponse> orderResponses = orderPage.getContent().stream()
                 .map(this::mapToOrderListResponse)
                 .collect(Collectors.toList());
-        
+
         return PageResponse.<OrderListResponse>builder()
                 .content(orderResponses)
                 .page(orderPage.getNumber())
@@ -56,16 +56,16 @@ public class GetOrderListUseCase {
                 .hasPrevious(orderPage.hasPrevious())
                 .build();
     }
-    
+
     private Specification<Order> buildSpecification(OrderListRequest request) {
         return (root, query, criteriaBuilder) -> {
             var predicates = new java.util.ArrayList<jakarta.persistence.criteria.Predicate>();
-            
+
             // Filter by userId
             if (request.getUserId() != null) {
                 predicates.add(criteriaBuilder.equal(root.get("userId"), request.getUserId()));
             }
-            
+
             // Filter by status
             if (request.getStatus() != null && !request.getStatus().trim().isEmpty()) {
                 try {
@@ -75,38 +75,38 @@ public class GetOrderListUseCase {
                     log.warn("Invalid order status: {}", request.getStatus());
                 }
             }
-            
+
             // Filter by order code
             if (request.getOrderCode() != null && !request.getOrderCode().trim().isEmpty()) {
                 predicates.add(criteriaBuilder.like(
-                    criteriaBuilder.lower(root.get("orderCode")),
-                    "%" + request.getOrderCode().toLowerCase() + "%"
+                        criteriaBuilder.lower(root.get("orderCode")),
+                        "%" + request.getOrderCode().toLowerCase() + "%"
                 ));
             }
-            
+
             // Filter by date range
             if (request.getFromDate() != null) {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), request.getFromDate()));
             }
-            
+
             if (request.getToDate() != null) {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), request.getToDate()));
             }
-            
+
             return criteriaBuilder.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
         };
     }
-    
+
     private Pageable buildPageable(OrderListRequest request) {
-        Sort.Direction direction = "ASC".equalsIgnoreCase(request.getSortDirection()) 
-            ? Sort.Direction.ASC 
-            : Sort.Direction.DESC;
-        
+        Sort.Direction direction = "ASC".equalsIgnoreCase(request.getSortDirection())
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
         Sort sort = Sort.by(direction, request.getSortBy());
-        
+
         return PageRequest.of(request.getPage(), request.getSize(), sort);
     }
-    
+
     private OrderListResponse mapToOrderListResponse(Order order) {
         return OrderListResponse.builder()
                 .id(order.getId())

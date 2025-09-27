@@ -15,15 +15,19 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
 @Slf4j
 public class OrderManagementController {
-    
+
     private final GetOrderListUseCase getOrderListUseCase;
     private final GetOrderDetailUseCase getOrderDetailUseCase;
     private final UpdateOrderStatusUseCase updateOrderStatusUseCase;
-    
+
+    /**
+     * Lấy danh sách đơn hàng
+     * GET /api/v1/orders
+     */
     @GetMapping
     public ResponseEntity<PageResponse<OrderListResponse>> getOrderList(
             @RequestParam(required = false) Long userId,
@@ -35,10 +39,10 @@ public class OrderManagementController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection) {
-        
-        log.info("Getting order list with filters - userId: {}, status: {}, orderCode: {}, fromDate: {}, toDate: {}, page: {}, size: {}", 
+
+        log.info("Getting order list with filters - userId: {}, status: {}, orderCode: {}, fromDate: {}, toDate: {}, page: {}, size: {}",
                 userId, status, orderCode, fromDate, toDate, page, size);
-        
+
         OrderListRequest request = OrderListRequest.builder()
                 .userId(userId)
                 .status(status)
@@ -50,15 +54,19 @@ public class OrderManagementController {
                 .sortBy(sortBy)
                 .sortDirection(sortDirection)
                 .build();
-        
+
         PageResponse<OrderListResponse> response = getOrderListUseCase.execute(request);
         return ResponseEntity.ok(response);
     }
-    
+
+    /**
+     * Lấy chi tiết đơn hàng
+     * GET /api/v1/orders/{orderId}
+     */
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderDetailResponse> getOrderDetail(@PathVariable Long orderId) {
         log.info("Getting order detail for orderId: {}", orderId);
-        
+
         try {
             OrderDetailResponse response = getOrderDetailUseCase.execute(orderId);
             return ResponseEntity.ok(response);
@@ -67,14 +75,18 @@ public class OrderManagementController {
             return ResponseEntity.notFound().build();
         }
     }
-    
+
+    /**
+     * Cập nhật trạng thái đơn hàng
+     * PUT /api/v1/orders/{orderId}/status
+     */
     @PutMapping("/{orderId}/status")
     public ResponseEntity<OrderDetailResponse> updateOrderStatus(
             @PathVariable Long orderId,
             @RequestBody UpdateOrderStatusRequest request) {
-        
+
         log.info("Updating order status for orderId: {}, request: {}", orderId, request);
-        
+
         try {
             OrderDetailResponse response = updateOrderStatusUseCase.execute(orderId, request);
             return ResponseEntity.ok(response);
@@ -86,7 +98,11 @@ public class OrderManagementController {
             return ResponseEntity.badRequest().build();
         }
     }
-    
+
+    /**
+     * Tìm kiếm đơn hàng
+     * GET /api/v1/orders/search
+     */
     @GetMapping("/search")
     public ResponseEntity<PageResponse<OrderListResponse>> searchOrders(
             @RequestParam(required = false) String keyword,
@@ -98,10 +114,10 @@ public class OrderManagementController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDirection) {
-        
-        log.info("Searching orders with keyword: {}, userId: {}, status: {}, fromDate: {}, toDate: {}", 
+
+        log.info("Searching orders with keyword: {}, userId: {}, status: {}, fromDate: {}, toDate: {}",
                 keyword, userId, status, fromDate, toDate);
-        
+
         OrderListRequest request = OrderListRequest.builder()
                 .userId(userId)
                 .status(status)
@@ -113,9 +129,9 @@ public class OrderManagementController {
                 .sortBy(sortBy)
                 .sortDirection(sortDirection)
                 .build();
-        
+
         PageResponse<OrderListResponse> response = getOrderListUseCase.execute(request);
         return ResponseEntity.ok(response);
     }
-    
+
 }

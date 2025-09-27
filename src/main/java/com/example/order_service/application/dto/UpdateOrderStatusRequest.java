@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateOrderStatusRequest {
-    
+
     @NotBlank(message = "Status is required")
     private String status;
-    
+
     private String note;
 }

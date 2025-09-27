@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DeliveryAddressResponse {
-    
+
     private String receiverName;
     private String receiverPhone;
     private String addressLine1;

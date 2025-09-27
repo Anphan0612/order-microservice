@@ -14,7 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderResponse {
-    
+
     private Long id;
     private String orderCode;
     private Long userId;
@@ -28,7 +28,7 @@ public class OrderResponse {
     private DeliveryAddressResponse deliveryAddress;
     private List<OrderItemResponse> orderItems;
     private LocalDateTime createdAt;
-    
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -42,7 +42,7 @@ public class OrderResponse {
         private String city;
         private String fullAddress;
     }
-    
+
     @Data
     @Builder
     @NoArgsConstructor

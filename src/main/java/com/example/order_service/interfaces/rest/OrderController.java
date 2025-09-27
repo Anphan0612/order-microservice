@@ -11,30 +11,30 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/orders")
+@RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
 @Slf4j
 public class OrderController {
-    
+
     private final CreateOrderUseCase createOrderUseCase;
-    
+
     /**
      * Tạo đơn hàng mới
-     * POST /api/orders
+     * POST /api/v1/orders
      */
     @PostMapping
     public ResponseEntity<OrderResponse> createOrder(
             @Valid @RequestBody CreateOrderRequest request,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
-        
+
         log.info("Creating order for user: {}", request.getUserId());
         OrderResponse response = createOrderUseCase.execute(request, idempotencyKey);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-    
+
     /**
      * Health check endpoint
-     * GET /api/orders/health        
+     * GET /api/v1/orders/health
      */
     @GetMapping("/health")
     public ResponseEntity<String> health() {
