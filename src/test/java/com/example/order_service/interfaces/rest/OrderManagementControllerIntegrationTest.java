@@ -67,7 +67,7 @@ class OrderManagementControllerIntegrationTest {
                 .note("Test order for management")
                 .build();
 
-        MvcResult result = mockMvc.perform(post("/api/orders")
+        MvcResult result = mockMvc.perform(post("/api/v1/orders")
                         .header("Idempotency-Key", orderIdempotencyKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createRequest)))
@@ -84,7 +84,7 @@ class OrderManagementControllerIntegrationTest {
     @Test
     void getOrderList_ShouldReturnOrderList_WhenValidRequest() throws Exception {
         // When
-        MvcResult result = mockMvc.perform(get("/api/orders")
+        MvcResult result = mockMvc.perform(get("/api/v1/orders")
                         .param("userId", "1")
                         .param("page", "0")
                         .param("size", "20")
@@ -111,7 +111,7 @@ class OrderManagementControllerIntegrationTest {
     @Test
     void getOrderList_ShouldFilterByStatus_WhenStatusProvided() throws Exception {
         // When
-        MvcResult result = mockMvc.perform(get("/api/orders")
+        MvcResult result = mockMvc.perform(get("/api/v1/orders")
                         .param("status", "PENDING")
                         .param("page", "0")
                         .param("size", "20"))
@@ -134,7 +134,7 @@ class OrderManagementControllerIntegrationTest {
     @Test
     void getOrderDetail_ShouldReturnOrderDetail_WhenOrderExists() throws Exception {
         // When
-        MvcResult result = mockMvc.perform(get("/api/orders/{orderId}", createdOrderId))
+        MvcResult result = mockMvc.perform(get("/api/v1/orders/{orderId}", createdOrderId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andReturn();
@@ -155,7 +155,7 @@ class OrderManagementControllerIntegrationTest {
     @Test
     void getOrderDetail_ShouldReturnNotFound_WhenOrderNotExists() throws Exception {
         // When & Then
-        mockMvc.perform(get("/api/orders/{orderId}", 999L))
+        mockMvc.perform(get("/api/v1/orders/{orderId}", 999L))
                 .andExpect(status().isNotFound());
     }
 
@@ -168,7 +168,7 @@ class OrderManagementControllerIntegrationTest {
                 .build();
 
         // When
-        MvcResult result = mockMvc.perform(put("/api/orders/{orderId}/status", createdOrderId)
+        MvcResult result = mockMvc.perform(put("/api/v1/orders/{orderId}/status", createdOrderId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
@@ -192,7 +192,7 @@ class OrderManagementControllerIntegrationTest {
                 .note("Order confirmed")
                 .build();
 
-        mockMvc.perform(put("/api/orders/{orderId}/status", createdOrderId)
+        mockMvc.perform(put("/api/v1/orders/{orderId}/status", createdOrderId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(confirmRequest)))
                 .andExpect(status().isOk());
@@ -203,7 +203,7 @@ class OrderManagementControllerIntegrationTest {
                 .note("Trying to cancel confirmed order")
                 .build();
 
-        mockMvc.perform(put("/api/orders/{orderId}/status", createdOrderId)
+        mockMvc.perform(put("/api/v1/orders/{orderId}/status", createdOrderId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(cancelRequest)))
                 .andExpect(status().isBadRequest());
@@ -218,7 +218,7 @@ class OrderManagementControllerIntegrationTest {
                 .build();
 
         // When & Then
-        mockMvc.perform(put("/api/orders/{orderId}/status", 999L)
+        mockMvc.perform(put("/api/v1/orders/{orderId}/status", 999L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isNotFound());
@@ -227,7 +227,7 @@ class OrderManagementControllerIntegrationTest {
     @Test
     void searchOrders_ShouldReturnFilteredResults_WhenKeywordProvided() throws Exception {
         // When
-        MvcResult result = mockMvc.perform(get("/api/orders/search")
+        MvcResult result = mockMvc.perform(get("/api/v1/orders/search")
                         .param("keyword", "ORD")
                         .param("page", "0")
                         .param("size", "20"))
@@ -250,7 +250,7 @@ class OrderManagementControllerIntegrationTest {
     @Test
     void searchOrders_ShouldReturnEmptyResults_WhenNoMatchingKeyword() throws Exception {
         // When
-        MvcResult result = mockMvc.perform(get("/api/orders/search")
+        MvcResult result = mockMvc.perform(get("/api/v1/orders/search")
                         .param("keyword", "NONEXISTENT")
                         .param("page", "0")
                         .param("size", "20"))

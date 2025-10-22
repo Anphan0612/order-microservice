@@ -6,11 +6,9 @@ import com.example.order_service.domain.exception.OrderNotFoundException;
 import com.example.order_service.domain.exception.OrderValidationException;
 import com.example.order_service.domain.model.*;
 import com.example.order_service.domain.repository.OrderRepository;
-import com.example.order_service.domain.repository.OutboxEventRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,8 +28,6 @@ class UpdateOrderStatusUseCaseTest {
     @Mock
     private OrderRepository orderRepository;
 
-    @Mock
-    private OutboxEventRepository outboxEventRepository;
 
     @InjectMocks
     private UpdateOrderStatusUseCase updateOrderStatusUseCase;
@@ -88,7 +84,7 @@ class UpdateOrderStatusUseCaseTest {
         Long orderId = 1L;
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(testOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
-        when(outboxEventRepository.save(any(OutboxEvent.class))).thenReturn(new OutboxEvent());
+        
 
         // When
         OrderDetailResponse result = updateOrderStatusUseCase.execute(orderId, request);
@@ -100,14 +96,6 @@ class UpdateOrderStatusUseCaseTest {
         // Verify order was saved
         verify(orderRepository).save(testOrder);
 
-        // Verify outbox event was created
-        ArgumentCaptor<OutboxEvent> eventCaptor = ArgumentCaptor.forClass(OutboxEvent.class);
-        verify(outboxEventRepository).save(eventCaptor.capture());
-        OutboxEvent capturedEvent = eventCaptor.getValue();
-        assertEquals("Order", capturedEvent.getAggregateType());
-        assertEquals("1", capturedEvent.getAggregateId());
-        assertEquals("OrderStatusChanged", capturedEvent.getType());
-        assertEquals(EventStatus.NEW, capturedEvent.getStatus());
     }
 
     @Test
@@ -178,8 +166,7 @@ class UpdateOrderStatusUseCaseTest {
         request.setStatus("SHIPPED");
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(testOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
-        lenient().when(outboxEventRepository.save(any(OutboxEvent.class))).thenReturn(new OutboxEvent());
-
+       
         // When
         OrderDetailResponse result = updateOrderStatusUseCase.execute(orderId, request);
 
@@ -197,7 +184,7 @@ class UpdateOrderStatusUseCaseTest {
         request.setStatus("DELIVERED");
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(testOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
-        lenient().when(outboxEventRepository.save(any(OutboxEvent.class))).thenReturn(new OutboxEvent());
+        
 
         // When
         OrderDetailResponse result = updateOrderStatusUseCase.execute(orderId, request);
@@ -215,7 +202,7 @@ class UpdateOrderStatusUseCaseTest {
         request.setStatus("CANCELLED");
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(testOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
-        lenient().when(outboxEventRepository.save(any(OutboxEvent.class))).thenReturn(new OutboxEvent());
+        
 
         // When
         OrderDetailResponse result = updateOrderStatusUseCase.execute(orderId, request);
@@ -234,7 +221,7 @@ class UpdateOrderStatusUseCaseTest {
         request.setStatus("REFUNDED");
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(testOrder));
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
-        lenient().when(outboxEventRepository.save(any(OutboxEvent.class))).thenReturn(new OutboxEvent());
+        
 
         // When
         OrderDetailResponse result = updateOrderStatusUseCase.execute(orderId, request);

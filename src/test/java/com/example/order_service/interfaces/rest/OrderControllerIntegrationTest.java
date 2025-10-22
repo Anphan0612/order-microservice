@@ -57,7 +57,7 @@ class OrderControllerIntegrationTest {
                         .build())
                 .build();
 
-        mockMvc.perform(post("/api/orders")
+        mockMvc.perform(post("/api/v1/orders")
                         .header("Idempotency-Key", "test-key-123")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -68,7 +68,7 @@ class OrderControllerIntegrationTest {
 
     @Test
     void testHealthEndpoint() throws Exception {
-        mockMvc.perform(get("/api/orders/health"))
+        mockMvc.perform(get("/api/v1/orders/health"))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Order Service is running"));
     }

@@ -6,7 +6,6 @@ import com.example.order_service.domain.exception.OrderValidationException;
 import com.example.order_service.domain.model.*;
 import com.example.order_service.domain.repository.IdempotencyKeyRepository;
 import com.example.order_service.domain.repository.OrderRepository;
-import com.example.order_service.domain.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,6 @@ public class CreateOrderUseCase {
 
     private final OrderRepository orderRepository;
     private final IdempotencyKeyRepository idempotencyKeyRepository;
-    private final OutboxEventRepository outboxEventRepository;
 
     @Transactional
     public OrderResponse execute(CreateOrderRequest request, String idempotencyKey) {
@@ -71,8 +69,7 @@ public class CreateOrderUseCase {
             idempotencyKeyRepository.save(idemKey);
         }
 
-        // Create outbox event
-        createOutboxEvent(order, "OrderCreated");
+        // Outbox removed
 
         log.info("Order created successfully: {}", order.getOrderCode());
         return mapToResponse(order);
@@ -145,6 +142,8 @@ public class CreateOrderUseCase {
                     .productName(itemRequest.getProductName())
                     .unitPrice(itemRequest.getUnitPrice())
                     .quantity(itemRequest.getQuantity())
+                    .lineTotal(itemRequest.getUnitPrice()
+                            .multiply(BigDecimal.valueOf(itemRequest.getQuantity())))
                     .build();
             order.addOrderItem(orderItem);
         }
@@ -190,23 +189,7 @@ public class CreateOrderUseCase {
         }
     }
 
-    private void createOutboxEvent(Order order, String eventType) {
-        OutboxEvent event = OutboxEvent.builder()
-                .aggregateType("Order")
-                .aggregateId(order.getId().toString())
-                .type(eventType)
-                .payload(createEventPayload(order))
-                .status(EventStatus.NEW)
-                .createdAt(LocalDateTime.now())
-                .build();
-        outboxEventRepository.save(event);
-    }
-
-    private String createEventPayload(Order order) {
-        // Simple JSON payload - in real implementation, use proper JSON library
-        return String.format("{\"orderId\":%d,\"orderCode\":\"%s\",\"userId\":%d,\"status\":\"%s\"}",
-                order.getId(), order.getOrderCode(), order.getUserId(), order.getStatus());
-    }
+    // Outbox removed
 
     private OrderResponse mapToResponse(Order order) {
         return OrderResponse.builder()
